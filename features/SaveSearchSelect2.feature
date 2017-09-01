@@ -7,8 +7,6 @@ Feature: Save last search in select2
        Given I am logged in a Centreon server
 
     Scenario: Search a string in connector command field
-        Given a search on a select2
-        And I close this select2
-        When I reopen this select2
-        Then the search is fill by the previous search
-        And the elements are filtered
+        Given multiple hosts
+        When I stress the select2
+        Then the select2 works well

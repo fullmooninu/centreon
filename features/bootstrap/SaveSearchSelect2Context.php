@@ -1,129 +1,58 @@
 <?php
 
 use Centreon\Test\Behat\CentreonContext;
+use Centreon\Test\Behat\Configuration\HostConfigurationPage;
+use Centreon\Test\Behat\Configuration\ServiceConfigurationPage;
 
 /**
  * Defines application features from the specific context.
  */
 class SaveSearchSelect2Context extends CentreonContext
 {
+    protected $page;
+
     /**
-     * @Given a search on a select2
+     * @Given multiple hosts
      */
-    public function aSearchOnASelect2()
+    public function multipleHosts()
     {
-        /* Go to the page to connector configuration page */
-        $this->visit('/main.php?p=60806&o=c&id=1');
+        $this->page = new HostConfigurationPage($this);
+        $this->page->setProperties(array(
+            'name' => 'hostName1',
+            'alias' => 'hostAlias1',
+            'address' => 'localhost'
+        ));
+        $this->page->save();
 
-        /* Wait page loaded */
-        $this->spin(
-            function ($context) {
-                return $context->getSession()->getPage()->has(
-                    'css',
-                    'input[name="submitC"]'
-                );
-            }
-        );
-
-        /* Add search to select2 */
-        $inputField = $this->assertFind('css', 'select#command_id');
-
-        /* Open the select2 */
-        $choice = $inputField->getParent()->find('css', '.select2-selection');
-        if (!$choice) {
-            throw new \Exception('No select2 choice found');
-        }
-        $choice->press();
-        $this->spin(
-            function ($context) {
-                return count($context->getSession()->getPage()
-                        ->findAll('css', '.select2-container--open li.select2-results__option')) >= 4;
-            }
-        );
-
-        $this->getSession()->executeScript(
-            'jQuery("select#command_id").parent().find(".select2-search__field").val("load");'
-        );
-        $this->getSession()->wait(1000);
-
-
+        $this->page = new HostConfigurationPage($this);
+        $this->page->setProperties(array(
+            'name' => 'hostName2',
+            'alias' => 'hostAlias2',
+            'address' => 'localhost'
+        ));
+        $this->page->save();
     }
 
     /**
-     * @Given I close this select2
+     * @When I stress the select2
      */
-    public function iCloseThisSelect2()
+    public function iStressTheSelect2()
     {
-        /* Add search to select2 */
-        $inputField = $this->assertFind('css', 'select#command_id');
-
-        /* Open the select2 */
-        $choice = $inputField->getParent()->find('css', '.select2-selection');
-        if (!$choice) {
-            throw new \Exception('No select2 choice found');
-        }
-
-        $choice->press();
-        $this->getSession()->wait(1000);
-    }
-
-    /**
-     * @When I reopen this select2
-     */
-    public function iReopenThisSelect2()
-    {
-        /* Add search to select2 */
-        $inputField = $this->assertFind('css', 'select#command_id');
-
-        /* Open the select2 */
-        $choice = $inputField->getParent()->find('css', '.select2-selection');
-        if (!$choice) {
-            throw new \Exception('No select2 choice found');
-        }
-        $choice->press();
-        $this->spin(
-            function ($context) {
-                return count($context->getSession()->getPage()
-                        ->findAll('css', '.select2-container--open li.select2-results__option')) == 4;
-            }
-        );
-    }
-
-    /**
-     * @Then the search is fill by the previous search
-     */
-    public function theSearchIsFillByThePreviousSearch()
-    {
-        /* Add search to select2 */
-        $inputField = $this->assertFind('css', 'select#command_id');
-
-        /* Open the select2 */
-        $choice = $inputField->getParent()->find('css', '.select2-selection');
-        if (!$choice) {
-            throw new \Exception('No select2 choice found');
-        }
-        if ($choice->find('css', '.select2-search__field')->getValue() !== 'load') {
-            throw new \Exception('The field search is not filled');
+        $this->page = new ServiceConfigurationPage($this);
+        $this->page->switchTab(1);
+        for ($i=0;$i++;$i<1000) {
+            $this->selectToSelectTwo('select#service_hPars', 'hostName1');
+            $this->selectToSelectTwo('select#command_command_id', 'check_http');
+            $this->selectToSelectTwo('select#service_hPars', 'hostName2');
+            $this->selectToSelectTwo('select#command_command_id', 'check_https');
         }
     }
 
     /**
-     * @Then the elements are filtered
+     * @Then the select2 works well
      */
-    public function theElementsAreFiltered()
+    public function theSelect2WorksWell()
     {
-        /* Add search to select2 */
-        $inputField = $this->assertFind('css', 'select#command_id');
-
-        /* Open the select2 */
-        $choice = $inputField->getParent()->find('css', '.select2-selection');
-        if (!$choice) {
-            throw new \Exception('No select2 choice found');
-        }
-        foreach ($choice->findAll('css', '.select2-results li') as $element) {
-            if (stristr($element, 'load') === false) {
-                throw new \Exception('An element is not filtered.');
-            }
-        }
+        // it's ok
     }
 }
